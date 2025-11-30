@@ -37,7 +37,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.32.0
+          flutter-version: "3.38.3"
 
       - name: Clean & install dependencies
         run: |
@@ -87,7 +87,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.32.0
+          flutter-version: "3.38.3"
 
       - name: Install dependencies
         run: flutter pub get
