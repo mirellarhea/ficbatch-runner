@@ -61,13 +61,13 @@ jobs:
         run: flutter build apk --release
 
       - name: Rename APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk ficbatch-android.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk ficbatch.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-artifacts
-          path: ficbatch-android.apk
+          path: ficbatch.apk
           if-no-files-found: error
 
 
@@ -95,63 +95,15 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
 
-      - name: Copy raw exe
+      - name: Copy generated EXE
         run: |
-          Copy-Item "build/windows/x64/runner/Release/ficbatch.exe" "ficbatch-windows.exe" -Force
+          Copy-Item "build/windows/x64/runner/Release/ficbatch.exe" "ficbatch.exe" -Force
 
-      - name: Install Inno Setup
-        run: choco install innosetup -y
-        shell: pwsh
-
-      - name: Create Inno Setup script
-        shell: pwsh
-        run: |
-          $sourceDir = (Resolve-Path "build/windows/x64/runner/Release").Path
-          $outDir = $pwd
-          $iss = @"
-          #define MyAppName "ficbatch"
-          #define MyAppVersion "${{ github.event.inputs.version }}"
-          #define OutputBase "ficbatch-windows-installer"
-          #define SourceDir "$($sourceDir)"
-          #define OutDir "$($outDir)"
-
-          [Setup]
-          AppName={#MyAppName}
-          AppVersion={#MyAppVersion}
-          OutputBaseFilename={#OutputBase}
-          OutputDir={#OutDir}
-          Compression=lzma
-          SolidCompression=yes
-          WizardStyle=modern
-          ArchitecturesInstallIn64BitMode=x64
-
-          [Files]
-          Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs
-
-          [Icons]
-          Name: "{autoprograms}\ficbatch"; Filename: "{app}\ficbatch.exe"
-
-          "@
-          $issPath = "$env:RUNNER_TEMP\ficbatch-installer.iss"
-          Set-Content -Path $issPath -Value $iss -Encoding UTF8
-
-      - name: Build installer
-        shell: pwsh
-        run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:RUNNER_TEMP\ficbatch-installer.iss"
-
-      - name: Rename installer
-        shell: pwsh
-        run: |
-          Move-Item "ficbatch-windows-installer.exe" "ficbatch-windows-installer.exe" -Force
-
-      - name: Upload Windows artifacts
+      - name: Upload Windows EXE
         uses: actions/upload-artifact@v4
         with:
           name: windows-artifacts
-          path: |
-            ficbatch-windows.exe
-            ficbatch-windows-installer.exe
+          path: ficbatch.exe
           if-no-files-found: error
 
 
@@ -174,9 +126,8 @@ jobs:
           name: "Release ${{ github.event.inputs.version }}"
           body: |
             **Included Files**
-            - ficbatch-windows.exe
-            - ficbatch-windows-installer.exe
-            - ficbatch-android.apk
+            - ficbatch.exe (Windows)
+            - ficbatch.apk (Android)
           token: ${{ secrets.ORIGIN_PAT }}
           files: release-dist/**/*
           overwrite_files: true
